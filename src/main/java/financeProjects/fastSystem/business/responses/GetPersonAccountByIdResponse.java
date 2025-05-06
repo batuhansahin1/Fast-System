@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class GetPersonAccountByIdResponse {
 
-	private String hesapNo;
+	private String accountNo;
 	private String bankName;
 	private String personFirstName;
 	private String personTcKimlikNo;

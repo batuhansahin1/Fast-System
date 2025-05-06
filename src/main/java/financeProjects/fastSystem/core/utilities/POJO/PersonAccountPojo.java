@@ -14,12 +14,13 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class PersonAccountPojo {
 
-	private String hesapNo;
+	private String accountNo;
 	
 	private LocalDateTime createdDate;
 	
     private String accountCurrency;
 
+	private String ibanNumber;
 
 	
 }

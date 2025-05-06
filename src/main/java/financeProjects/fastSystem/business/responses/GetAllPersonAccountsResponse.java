@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 public class GetAllPersonAccountsResponse {
 
 	
-	private String hesapNo;
+	private String accountNo;
 	private String bankName;
 	private String personFirstName;
 	private String personTcKimlikNo;

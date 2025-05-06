@@ -35,10 +35,17 @@ public class PersonAccount {
 	private Bank bank;
 	
 	@ManyToOne
-	@JoinColumn(name = "person_id")
+	@JoinColumn(name = "person_id")     
 	private Person person;
+	 
+	//bir hesabın birden fazla ibanı olabilir mantığıyla yapmıştık ama böyle bir şey yok 1 hesabın 1 tane ibanı var
+	//çünkü kullanıcının açtığı her bir hesap için hesapNumarası oluşturuluyor ve ibanı da bu parametrelerle oluşturuyoruz
+	//bu yüzden iban tablosuna gerek yok her iban zaten 1 hesap demek. Iban tablosunu denklemden çıkaracaz ve buraya ibanNumber
+	//field'ı ekledim pojolar olduğu için elle mapleme yapmayı düşünüyorum gelen createPersonAccountRequestte olması gereken fieldler:
+	//iban,hesapNo,banka adı,kişinin tcKimlikNo'su (veri için nüfusa istek yapılıp öyle kaydedilecek) diğer bilgileri de doğrulamak için
+    // tüm bilgileri isteyebilirim,ibanı oluşturup onu bankaya response döndüreceğiz kişiyi de personAccpuntRequestte oluşturacağız
 	
-	@OneToMany(mappedBy = "personAccount")
-	List<Iban> ibanList;  
+	//@OneToMany(mappedBy = "personAccount")
+	//List<Iban> ibanList;  
 	   
 }

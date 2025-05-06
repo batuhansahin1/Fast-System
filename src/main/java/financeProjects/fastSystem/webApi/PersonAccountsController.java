@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import financeProjects.fastSystem.business.abstracts.PersonAccountService;
 import financeProjects.fastSystem.business.requests.CreatePersonAccountRequest;
 import financeProjects.fastSystem.business.requests.UpdatePersonAccountRequest;
+import financeProjects.fastSystem.business.responses.AfterCreatingAccountResponse;
 import financeProjects.fastSystem.business.responses.GetAllPersonAccountsResponse;
 import financeProjects.fastSystem.business.responses.GetPersonAccountByIdResponse;
 import lombok.AllArgsConstructor;
@@ -34,8 +35,8 @@ public class PersonAccountsController {
 		return this.personAccountService.getById(id);
 	}
 	@PostMapping("/add")
-	void add(CreatePersonAccountRequest createPersonAccountRequest) {
-		this.personAccountService.add(createPersonAccountRequest);
+	AfterCreatingAccountResponse add(CreatePersonAccountRequest createPersonAccountRequest) {
+		return this.personAccountService.add(createPersonAccountRequest);
 	}
 	@PutMapping("/update")
 	void update(UpdatePersonAccountRequest updatePersonAccountRequest) {

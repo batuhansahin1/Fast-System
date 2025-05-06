@@ -12,14 +12,16 @@ public class PersonPojo {
 	private String lastName;
 	private String tcKimlikNo;
 	private LocalDate birthDate;
-	
+	private String birthPlace;
+
 	public PersonPojo() {}
 	
-	public PersonPojo(String firstName, String lastName, String tcKimlikNo, LocalDate birthDate) {
+	public PersonPojo(String firstName, String lastName, String tcKimlikNo, LocalDate birthDate,String birthPlace) {
 		this.firstName = firstName;
 		this.lastName = lastName;
 		this.tcKimlikNo = tcKimlikNo;
 		this.birthDate = birthDate;
+		this.birthPlace=birthPlace;
 	}
 	public String getFirstName() {
 		return firstName;
@@ -46,5 +48,10 @@ public class PersonPojo {
 		this.birthDate = birthDate;
 	}
 
-	
+	public String getBirtPlace() {
+		return birthPlace;
+	}
+	public void setBirthPlace(String birthPlace) {
+		this.birthPlace = birthPlace;
+	}
 }

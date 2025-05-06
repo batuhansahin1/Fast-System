@@ -19,6 +19,6 @@ public class UpdatePersonAccountRequest {
 	@NotBlank
 	@NotEmpty
 	@Size(min = 16,max = 16)// string ve kolleksiyonlar (list,set,map)gibi ve diziler üzerinde kullanılabilir
-	private String hesapNo;
+	private String accountNo;
 	
 }

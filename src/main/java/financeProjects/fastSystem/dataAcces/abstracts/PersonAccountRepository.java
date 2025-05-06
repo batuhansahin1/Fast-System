@@ -1,11 +1,13 @@
 package financeProjects.fastSystem.dataAcces.abstracts;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
 import financeProjects.fastSystem.entities.concretes.Bank;
 import financeProjects.fastSystem.entities.concretes.Person;
 import financeProjects.fastSystem.entities.concretes.PersonAccount;
 
+@Repository
 public interface PersonAccountRepository extends JpaRepository<PersonAccount, Integer> {
 
 	//19.04.2025'de işe yaramayan metodlar şimdi işe yaradı ve hata vermiyor sorgular düzeltilmiş
@@ -35,4 +37,6 @@ public interface PersonAccountRepository extends JpaRepository<PersonAccount, In
 	 * @Query("SELECT COUNT(p) > 0 FROM PersonAccount p WHERE p.bank.id = :bankId")
 	 * boolean existsByBankId(@Param("bank_id") int id);
 	 */
+	boolean existsByPerson_PersonPojo_TcKimlikNo(String tcKimlikNo);
 }
+ 
