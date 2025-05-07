@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -12,11 +13,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
+@Component
 public class HelperFunctions {
    private final WebClient webClient; 
    
     public Map<String,Object> getResponse(String url){
-        
+         System.out.println(url);
         Map<String,Object> responseObject=webClient.get().uri(url).retrieve().bodyToMono(new ParameterizedTypeReference<Map<String,Object>>() {
         }).block();
         return  responseObject;

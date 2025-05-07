@@ -17,22 +17,9 @@ public class CreatePersonAccountRequest {
    //personPart
 	@NotBlank
 	@NotEmpty
+	@Size(min = 11,max = 11)
 	private String personTcKimlikNo;
-	@NotBlank
-	@NotEmpty
-	private String personFirstName;
 
-	@NotBlank
-	@NotEmpty
-	private String personLastName;
-
-	@NotBlank
-	@NotEmpty
-	private LocalDate personBirthDate;
-
-	@NotBlank
-	@NotEmpty
-	private String personBirthPlace;
 
 	
 	@NotBlank
@@ -44,7 +31,7 @@ public class CreatePersonAccountRequest {
 	@NotBlank
 	@NotEmpty
 	@Size(min = 10,max = 10)
-	private String vKimlikNo;
+	private String vergiKimlikNo;
 
 	@NotBlank
 	@NotEmpty

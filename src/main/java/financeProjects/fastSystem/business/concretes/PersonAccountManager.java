@@ -1,5 +1,6 @@
 package financeProjects.fastSystem.business.concretes;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -22,6 +23,7 @@ import financeProjects.fastSystem.core.utilities.Helpers.HelperFunctions;
 import financeProjects.fastSystem.core.utilities.POJO.BankPojo;
 import financeProjects.fastSystem.core.utilities.POJO.PersonAccountPojo;
 import financeProjects.fastSystem.core.utilities.POJO.PersonPojo;
+import financeProjects.fastSystem.core.utilities.generators.IbanGenerator;
 import financeProjects.fastSystem.core.utilities.mappers.ModelMapperService;
 import financeProjects.fastSystem.dataAcces.abstracts.BankRepository;
 import financeProjects.fastSystem.dataAcces.abstracts.PersonAccountRepository;
@@ -45,6 +47,7 @@ public class PersonAccountManager implements PersonAccountService {
 	private final PersonBusinessRules personBusinessRules;
 	private final BankBusinessRules bankBusinessRules;
 	private final HelperFunctions helperFunctions;
+	
 	
 	@Override
 	public List<GetAllPersonAccountsResponse> getAll() {
@@ -106,8 +109,14 @@ public class PersonAccountManager implements PersonAccountService {
 		LocalDateTime createdDate= 	LocalDateTime.now();
 		PersonAccount personAccount=this.modelMapperService.forRequest().map(createPersonAccountRequest, PersonAccount.class);
 	    
-		//yukarıdakiyle aynı şekil bunun için de geçerli
-		Optional<Bank> optionalBank=this.bankRepository.findByBankPojo_VKimlikNumber(createPersonAccountRequest.getVKimlikNo());
+		//yukarıdakiyle aynı şekil bunun için de geçerli banka ve person varsa eklemeyip bilgileri person accountla
+		//ilişkilendiriyoruz ama yoksa oluşturup personAccount'u kaydediyoruz bu banka için geçerli değil aslında
+		//banka kaydı merkez bankasında yoksa zaten bu veriyi kaydetmemem lazım hata fırlatmam lazım böyle bir banka
+		//sistemde yok bu yüzden kayıt oluşturulamadı diye
+		//aradan sonra müşteri oluşturup, o müşteriye hesap açıcağız ve bu hesap açma işleminde civil sistemden gelen
+		//veri ile doğrulama yapıcaz onun bilgilerini fast sistemine kaydedicez person tablosuna 1 requestte 3 farklı
+		// tabloya kayır yapıcaz bunların hepsi fast sitemine personAccount oluştur requesti ile mümkün olucak
+		Optional<Bank> optionalBank=this.bankRepository.findByBankPojo_VKimlikNumber(createPersonAccountRequest.getVergiKimlikNo());
          
 		Optional<Person> optionalPerson=this.personRepository.findByPersonPojo_TcKimlikNo(createPersonAccountRequest.getPersonTcKimlikNo());
 	    if(optionalPerson.isPresent()){
@@ -117,16 +126,27 @@ public class PersonAccountManager implements PersonAccountService {
 		else {
 			//burada bilgileri sorgulamak için api request atıcaz doğruysa aşağıdaki gibi set edicez
 			//yanlışsa error vericez validationError 07.05.2025 görevi
-			String url=UriComponentsBuilder.fromHttpUrl("localhost:9091/api/person/getPerson")
+			
+			String url=UriComponentsBuilder.fromHttpUrl("http://localhost:9091/api/person/getPerson")
 			.queryParam("tcKimlikNo",createPersonAccountRequest.getPersonTcKimlikNo()).toUriString();
+			
 			Map<String,Object> responseObj= helperFunctions.getResponse(url);
+			System.out.println(responseObj);
+			//veri sıkıntısız geliyor sıkıntıyı hallettik şimdi validation yapmamız lazım
+            if(responseObj.equals(null)){
+				//veri yok hata döndür
+			}
+			if(!responseObj.get("tcKimlikNo").equals(createPersonAccountRequest.getPersonTcKimlikNo())){
+				//validation error döndür
+			}
 			Person person=new Person();
 		    PersonPojo personPojo=new PersonPojo();
-			personPojo.setTcKimlikNo(createPersonAccountRequest.getPersonTcKimlikNo());
-			personPojo.setFirstName(createPersonAccountRequest.getPersonFirstName());
-			personPojo.setLastName(createPersonAccountRequest.getPersonLastName());
-			personPojo.setBirthDate(createPersonAccountRequest.getPersonBirthDate());
-			personPojo.setBirthPlace(createPersonAccountRequest.getPersonBirthPlace());
+			personPojo.setTcKimlikNo(responseObj.get("tcKimlikNo").toString());
+			personPojo.setFirstName(responseObj.get("firstName").toString());
+			personPojo.setLastName(responseObj.get("lastName").toString());
+			LocalDate date=LocalDate.parse( responseObj.get("birthDate").toString());
+			personPojo.setBirthDate(date);
+			personPojo.setBirthPlace(responseObj.get("birthPlace").toString());
 			person.setPersonPojo(personPojo);
 			personRepository.save(person);
 			personAccount.setPerson(person);
@@ -139,9 +159,11 @@ public class PersonAccountManager implements PersonAccountService {
 		}
 		else{
 			Bank bank=new Bank();
+			BankPojo bankPojo=new BankPojo();
+			bank.setBankPojo(bankPojo);
 			bank.getBankPojo().setName(createPersonAccountRequest.getBankName());
 			bank.getBankPojo().setBankCode(createPersonAccountRequest.getBankCode());
-			bank.getBankPojo().setvKimlikNumber(createPersonAccountRequest.getVKimlikNo());
+			bank.getBankPojo().setvKimlikNumber(createPersonAccountRequest.getVergiKimlikNo());
 			
 			bankRepository.save(bank);
 			personAccount.setBank(bank);
@@ -151,13 +173,18 @@ public class PersonAccountManager implements PersonAccountService {
 		personAccount.getPersonAccountPojo().setCreatedDate(createdDate);
 		personAccount.getPersonAccountPojo().setAccountCurrency(createPersonAccountRequest.getAccountCurrency());
 		personAccount.getPersonAccountPojo().setAccountNo(createPersonAccountRequest.getAccountNo());
-		
+		IbanGenerator ibanGenerator=new IbanGenerator();
+		personAccount.getPersonAccountPojo().
+		setIbanNumber(ibanGenerator.generateIban("TR",createPersonAccountRequest.getBankCode()
+		, createPersonAccountRequest.getAccountNo()));
 		this.personAccountRepository.save(personAccount);
 
 		AfterCreatingAccountResponse afterCreatingAccountResponse=new AfterCreatingAccountResponse();
+		
 		afterCreatingAccountResponse.setIbanNumber(personAccount.getPersonAccountPojo().getIbanNumber());
-		afterCreatingAccountResponse.setErrorCode("200");
 		afterCreatingAccountResponse.setResponseMessage("Başarılı bir şekilde kaydedilmiştir");
+		afterCreatingAccountResponse.setResponseCode("200");
+		
 		return afterCreatingAccountResponse;
 	}
 
