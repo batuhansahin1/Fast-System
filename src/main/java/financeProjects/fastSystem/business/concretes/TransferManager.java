@@ -13,10 +13,13 @@ import financeProjects.fastSystem.business.responses.GetAllTransfersResponse;
 import financeProjects.fastSystem.business.responses.GetTransferByIdResponse;
 import financeProjects.fastSystem.business.rules.IbanBusinessRules;
 import financeProjects.fastSystem.business.rules.TransferBusinessRules;
+import financeProjects.fastSystem.core.utilities.POJO.TransferPojo;
 import financeProjects.fastSystem.core.utilities.mappers.ModelMapperService;
 import financeProjects.fastSystem.dataAcces.abstracts.IbanRepository;
+import financeProjects.fastSystem.dataAcces.abstracts.PersonAccountRepository;
 import financeProjects.fastSystem.dataAcces.abstracts.TransferRepository;
 import financeProjects.fastSystem.entities.concretes.Iban;
+import financeProjects.fastSystem.entities.concretes.PersonAccount;
 import financeProjects.fastSystem.entities.concretes.Transfer;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -27,11 +30,12 @@ import lombok.Data;
 @AllArgsConstructor
 public class TransferManager implements TransferService  {
       
-	private TransferRepository transferRepository;
-	private TransferBusinessRules transferBusinessRules;
-    private ModelMapperService modelMapperService;
-    private IbanRepository ibanRepository;
-    private IbanBusinessRules ibanBusinessRules;
+	private final TransferRepository transferRepository;
+	private final TransferBusinessRules transferBusinessRules;
+    private final ModelMapperService modelMapperService;
+    private final IbanRepository ibanRepository;
+    private final IbanBusinessRules ibanBusinessRules;
+	private final PersonAccountRepository personAccountRepository;
 	
 	@Override
 	public List<GetAllTransfersResponse> getAll() {
@@ -40,8 +44,8 @@ public class TransferManager implements TransferService  {
 				.map(transfer->{
 					//this.modelMapperService.forResponse().map(transfer, GetAllTransfersResponse.class)
 				    GetAllTransfersResponse transferResponse=new GetAllTransfersResponse();
-					transferResponse.setAliciIbanNumber(transfer.getAlici().getIbanPojo().getIbanNumber());
-					transferResponse.setGondericiIbanNumber(transfer.getGonderici().getIbanPojo().getIbanNumber());
+					transferResponse.setAliciIbanNumber(transfer.getTransferPojo().getReceiverIban());
+					transferResponse.setGondericiIbanNumber(transfer.getTransferPojo().getSenderIban());
 					transferResponse.setAmount(transfer.getTransferPojo().getTransferAmount());
 					transferResponse.setDescription(transfer.getTransferPojo().getTransferDescription());
 					return transferResponse;
@@ -73,8 +77,15 @@ public class TransferManager implements TransferService  {
 		 * this.transferBusinessRules.checkIfAlıcıIbanIdExists(createTransferRequest.
 		 * getAlici_id());
 		 */
-		this.ibanBusinessRules.checkIfIbanIdExists(createTransferRequest.getAlici_id());
-		this.ibanBusinessRules.checkIfIbanIdExists(createTransferRequest.getGonderici_id());
+
+		//this.ibanBusinessRules.checkIfIbanIdExists(createTransferRequest.getAlici_id());
+		//this.ibanBusinessRules.checkIfIbanIdExists(createTransferRequest.getGonderici_id());
+        //transfer içinde yazılacak
+		//ikisini de checkIf iban exists ile kontrol edebiliriz
+		this.transferBusinessRules.checkIfIbanExists(createTransferRequest.getSenderIban());
+        this.transferBusinessRules.checkIfIbanExists(createTransferRequest.getReceiverIban());
+
+
 		//postgre ilgili bir hata var localDate ile ilgili
 		Date transferDateTime= new Date();
 		//buradakini de iban tablosundan çekmemiz lazım çünkü bulamayacak ve null döndürecek bu yüzden ibanRepositoryden çağırmamız lazım
@@ -86,14 +97,23 @@ public class TransferManager implements TransferService  {
 		 * alıcıIban=this.transferRepository.findIbanByAlici_Id(createTransferRequest.
 		 * getAlici_id());
 		 */
-		Iban gonderenIban=this.ibanRepository.findById(createTransferRequest.getGonderici_id()).orElseThrow();
-		Iban alıcıIban=this.ibanRepository.findById(createTransferRequest.getAlici_id()).orElseThrow();
+		//gerek yok iban tablosu kaldırıldı
+		// Iban gonderenIban=this.ibanRepository.findById(createTransferRequest.getGonderici_id()).orElseThrow();
+		// Iban alıcıIban=this.ibanRepository.findById(createTransferRequest.getAlici_id()).orElseThrow();
 		Transfer transfer=this.modelMapperService.forRequest().map(createTransferRequest, Transfer.class);
 		      //transferNumber creator
-		
-				transfer.setGonderici(gonderenIban);
-				transfer.setAlici(alıcıIban);
+		TransferPojo transferPojo=new TransferPojo();
+                transfer.setTransferPojo(transferPojo);
+          PersonAccount receiverPersonAccount=personAccountRepository
+		  .findByPersonAccountPojoIbanNumber(createTransferRequest.getReceiverFirstName());
+		  PersonAccount	senderPersonAccount=personAccountRepository
+		  .findByPersonAccountPojoIbanNumber(createTransferRequest.getSenderIban())	;
+		  transfer.setReceiverPersonAccount(receiverPersonAccount);
+		  transfer.setSenderPersonAccount(senderPersonAccount);
+		  transfer.getTransferPojo().setSenderIban(createTransferRequest.getSenderIban());
+				transfer.getTransferPojo().setReceiverIban(createTransferRequest.getReceiverIban());
 				//hata çıktı pojo ile ilgili
+				//hatanın çözümü pojo üretip ona attributeleri set edip sonra da bunu transfer'e kaydedicez
 				System.out.println(transfer.getTransferPojo());
 				transfer.getTransferPojo().setTransferDate(transferDateTime);
 		this.transferRepository.save(transfer);
@@ -104,8 +124,8 @@ public class TransferManager implements TransferService  {
 		this.transferBusinessRules.checkIfTransferIdExists(updateTransferRequest.getId());
 		
 		Transfer transfer=this.transferRepository.findById(updateTransferRequest.getId()).orElseThrow();
-		Iban gonderenIban=transfer.getGonderici();
-		Iban alıcıIban=transfer.getAlici();
+		// Iban gonderenIban=transfer.getGonderici();
+		// Iban alıcıIban=transfer.getAlici();
 		Transfer transferUpdated=this.modelMapperService.forRequest().map(updateTransferRequest, Transfer.class);
 		/*
 		 * transferUpdated.setGonderici(gonderenIban);
@@ -122,6 +142,7 @@ public class TransferManager implements TransferService  {
 		
 	}
 
+	//merkez bankasından neden transfer kaydı silinsin
 	@Override
 	public void delete(int id) {
 		this.transferBusinessRules.checkIfTransferIdExists(id);

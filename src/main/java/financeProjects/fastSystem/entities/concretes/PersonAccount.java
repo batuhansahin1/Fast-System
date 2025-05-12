@@ -37,7 +37,13 @@ public class PersonAccount {
 	@ManyToOne
 	@JoinColumn(name = "person_id")     
 	private Person person;
-	 
+	
+	
+	//buraya transferList'i eklemek lazım
+	@OneToMany(mappedBy = "personAccount")
+	List<Transfer> transfers;
+	
+
 	//bir hesabın birden fazla ibanı olabilir mantığıyla yapmıştık ama böyle bir şey yok 1 hesabın 1 tane ibanı var
 	//çünkü kullanıcının açtığı her bir hesap için hesapNumarası oluşturuluyor ve ibanı da bu parametrelerle oluşturuyoruz
 	//bu yüzden iban tablosuna gerek yok her iban zaten 1 hesap demek. Iban tablosunu denklemden çıkaracaz ve buraya ibanNumber
@@ -47,5 +53,6 @@ public class PersonAccount {
 	
 	//@OneToMany(mappedBy = "personAccount")
 	//List<Iban> ibanList;  
+
 	   
 }

@@ -42,7 +42,7 @@ public class Iban {
 	  @JoinColumn(name="person_account_id") 
 	  PersonAccount personAccount;
 	 
-    
+    //bu tablo iptal
     @OneToMany(mappedBy = "gonderici")
     List<Transfer> sendedTransfers;
     

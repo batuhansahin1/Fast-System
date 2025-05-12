@@ -14,16 +14,25 @@ public class CreateTransferRequest {
 	@NotBlank
 	@NotNull
 	private int transferPojoTransferAmount;
+	
+	//bunlar iban olucak tabiiki de ibandan bulucaz kişileri
+	//buralar düzenlenecek
 	@NotBlank
 	@NotNull
-	private int gonderici_id;
+	private String senderIban;
 	
 	@NotBlank
 	@NotNull
-	private int alici_id;
-	
+	private String receiverIban;
+	@NotBlank
+	@NotNull
+	private String receiverFirstName;
+	@NotBlank
+	@NotNull
+	private String receiverLastName;
 	
 	  @NotNull
-	  @NotBlank private String transferPojoTransferDescription;
+	  @NotBlank 
+	  private String transferPojoTransferDescription;
 	 
 }

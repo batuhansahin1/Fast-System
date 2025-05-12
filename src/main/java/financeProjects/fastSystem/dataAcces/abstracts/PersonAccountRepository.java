@@ -38,5 +38,6 @@ public interface PersonAccountRepository extends JpaRepository<PersonAccount, In
 	 * boolean existsByBankId(@Param("bank_id") int id);
 	 */
 	boolean existsByPerson_PersonPojo_TcKimlikNo(String tcKimlikNo);
+	PersonAccount findByPersonAccountPojoIbanNumber(String ibanNumber);
 }
  

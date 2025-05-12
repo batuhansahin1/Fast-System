@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.springframework.cglib.beans.BeanCopier.Generator;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -23,7 +24,8 @@ import financeProjects.fastSystem.core.utilities.Helpers.HelperFunctions;
 import financeProjects.fastSystem.core.utilities.POJO.BankPojo;
 import financeProjects.fastSystem.core.utilities.POJO.PersonAccountPojo;
 import financeProjects.fastSystem.core.utilities.POJO.PersonPojo;
-import financeProjects.fastSystem.core.utilities.generators.IbanGenerator;
+import financeProjects.fastSystem.core.utilities.generators.Generators;
+
 import financeProjects.fastSystem.core.utilities.mappers.ModelMapperService;
 import financeProjects.fastSystem.dataAcces.abstracts.BankRepository;
 import financeProjects.fastSystem.dataAcces.abstracts.PersonAccountRepository;
@@ -59,7 +61,7 @@ public class PersonAccountManager implements PersonAccountService {
 					//getname'si null olan bir veri satırı vardı silinince düzeldi pointer oluşturuluyor
 					System.out.println(account.getBank().getBankPojo().getName());
 					getAllPersonAccountResponse.setBankName(account.getBank().getBankPojo().getName());
-					getAllPersonAccountResponse.setAccountNo(account.getPersonAccountPojo().getAccountNo());
+					getAllPersonAccountResponse.setAccountNo(account.getPersonAccountPojo().getAccountNumber());
 					getAllPersonAccountResponse.setPersonFirstName(account.getPerson().getPersonPojo().getFirstName());
 					getAllPersonAccountResponse.setPersonTcKimlikNo(account.getPerson().getPersonPojo().getTcKimlikNo());
 					getAllPersonAccountResponse.setAccountCurrency(account.getPersonAccountPojo().getAccountCurrency());
@@ -78,7 +80,7 @@ public class PersonAccountManager implements PersonAccountService {
 		GetPersonAccountByIdResponse getPersonAccountResponse=this.modelMapperService.forResponse().map(personAccount, GetPersonAccountByIdResponse.class);
 		//pojolar olduğu için mapperlar set etmez çünkü adını bulamazlar
 		getPersonAccountResponse.setBankName(personAccount.getBank().getBankPojo().getName());
-		getPersonAccountResponse.setAccountNo(personAccount.getPersonAccountPojo().getAccountNo());
+		getPersonAccountResponse.setAccountNo(personAccount.getPersonAccountPojo().getAccountNumber());
 		getPersonAccountResponse.setPersonFirstName(personAccount.getPerson().getPersonPojo().getFirstName());
 		getPersonAccountResponse.setPersonTcKimlikNo(personAccount.getPerson().getPersonPojo().getTcKimlikNo());
 		return getPersonAccountResponse;
@@ -106,7 +108,7 @@ public class PersonAccountManager implements PersonAccountService {
 		//personun bilgilerini civil sistemden sorgulamak lazım eğer burada varsa sorgulamaya gerek yok ama yoksa 
 		//civil sistemden sorgulamamız lazım
 		
-		LocalDateTime createdDate= 	LocalDateTime.now();
+		LocalDate createdDate= 	LocalDate.now();
 		PersonAccount personAccount=this.modelMapperService.forRequest().map(createPersonAccountRequest, PersonAccount.class);
 	    
 		//yukarıdakiyle aynı şekil bunun için de geçerli banka ve person varsa eklemeyip bilgileri person accountla
@@ -116,8 +118,9 @@ public class PersonAccountManager implements PersonAccountService {
 		//aradan sonra müşteri oluşturup, o müşteriye hesap açıcağız ve bu hesap açma işleminde civil sistemden gelen
 		//veri ile doğrulama yapıcaz onun bilgilerini fast sistemine kaydedicez person tablosuna 1 requestte 3 farklı
 		// tabloya kayır yapıcaz bunların hepsi fast sitemine personAccount oluştur requesti ile mümkün olucak
-		Optional<Bank> optionalBank=this.bankRepository.findByBankPojo_VKimlikNumber(createPersonAccountRequest.getVergiKimlikNo());
-         
+		this.bankBusinessRules.checkIfBankCodeExists(createPersonAccountRequest.getBankCode());
+		//bunda optional'a gerek yok yoksa zaten hata fırlatıcaz
+        Bank bank= this.bankRepository.findByBankPojo_VKimlikNumber(createPersonAccountRequest.getVergiKimlikNo());
 		Optional<Person> optionalPerson=this.personRepository.findByPersonPojo_TcKimlikNo(createPersonAccountRequest.getPersonTcKimlikNo());
 	    if(optionalPerson.isPresent()){
 			Person person=optionalPerson.get();
@@ -136,9 +139,6 @@ public class PersonAccountManager implements PersonAccountService {
             if(responseObj.equals(null)){
 				//veri yok hata döndür
 			}
-			if(!responseObj.get("tcKimlikNo").equals(createPersonAccountRequest.getPersonTcKimlikNo())){
-				//validation error döndür
-			}
 			Person person=new Person();
 		    PersonPojo personPojo=new PersonPojo();
 			personPojo.setTcKimlikNo(responseObj.get("tcKimlikNo").toString());
@@ -153,29 +153,37 @@ public class PersonAccountManager implements PersonAccountService {
             
 		}
 		
-		if(optionalBank.isPresent()){
-
-			personAccount.setBank(optionalBank.get());
-		}
-		else{
-			Bank bank=new Bank();
-			BankPojo bankPojo=new BankPojo();
-			bank.setBankPojo(bankPojo);
-			bank.getBankPojo().setName(createPersonAccountRequest.getBankName());
-			bank.getBankPojo().setBankCode(createPersonAccountRequest.getBankCode());
-			bank.getBankPojo().setvKimlikNumber(createPersonAccountRequest.getVergiKimlikNo());
+		// if(optionalBank.isPresent()){
+        //     //bank zaten oluşturulmuş olan bir banka olucak sistemde kaydı olmayan banka request atamaz 
+		// 	//alttaki kod gereksiz
+		// 	personAccount.setBank(optionalBank.get());
+		// }
+		// else{
+		// 	Bank bank=new Bank();
+		// 	BankPojo bankPojo=new BankPojo();
+		// 	bank.setBankPojo(bankPojo);
+		// 	bank.getBankPojo().setName(createPersonAccountRequest.getBankName());
+		// 	bank.getBankPojo().setBankCode(createPersonAccountRequest.getBankCode());
+		// 	bank.getBankPojo().setvKimlikNumber(createPersonAccountRequest.getVergiKimlikNo());
 			
-			bankRepository.save(bank);
-			personAccount.setBank(bank);
-		}
+		// 	bankRepository.save(bank);
+		// 	personAccount.setBank(bank);
+		// }
+		//ortak olanlar http request yapsan da yapmasan da eğer bir hata yoksa bankayı 
+		//ve personAccountPojo yu ikisinde de set etmek zorundasın sadece veritabanında person var mı
+		//diye kontrol ediyoruz varsa civil sisteme boş yere request atmıyoruz
+		//istersen atıp güncel verileri de çekebilirsin 
+		//ileride zaten biri ikametghını değiştirirse ona sinyal gönderen 
+		//bir microservis tasarlayabiliriz
+		personAccount.setBank(bank);
 		PersonAccountPojo personAccountPojo=new PersonAccountPojo();
 	    personAccount.setPersonAccountPojo(personAccountPojo);
 		personAccount.getPersonAccountPojo().setCreatedDate(createdDate);
 		personAccount.getPersonAccountPojo().setAccountCurrency(createPersonAccountRequest.getAccountCurrency());
-		personAccount.getPersonAccountPojo().setAccountNo(createPersonAccountRequest.getAccountNo());
-		IbanGenerator ibanGenerator=new IbanGenerator();
+		personAccount.getPersonAccountPojo().setAccountNumber(createPersonAccountRequest.getAccountNo());
+
 		personAccount.getPersonAccountPojo().
-		setIbanNumber(ibanGenerator.generateIban("TR",createPersonAccountRequest.getBankCode()
+		setIbanNumber(helperFunctions.generateIban("TR",createPersonAccountRequest.getBankCode()
 		, createPersonAccountRequest.getAccountNo()));
 		this.personAccountRepository.save(personAccount);
 
@@ -184,7 +192,7 @@ public class PersonAccountManager implements PersonAccountService {
 		afterCreatingAccountResponse.setIbanNumber(personAccount.getPersonAccountPojo().getIbanNumber());
 		afterCreatingAccountResponse.setResponseMessage("Başarılı bir şekilde kaydedilmiştir");
 		afterCreatingAccountResponse.setResponseCode("200");
-		
+		afterCreatingAccountResponse.setCreatedDate(createdDate);
 		return afterCreatingAccountResponse;
 	}
 
@@ -197,7 +205,7 @@ public class PersonAccountManager implements PersonAccountService {
 		 * personAccount.setBank(personAccountOld.getBank()); 
 		 * personAccount.setPerson(personAccountOld.getPerson());
 		 */
-		personAccountOld.getPersonAccountPojo().setAccountNo(updatePersonAccountRequest.getAccountNo());
+		personAccountOld.getPersonAccountPojo().setAccountNumber(updatePersonAccountRequest.getAccountNo());
 		//personAccount.setIbanList(personAccountOld.getIbanList());
 		this.personAccountRepository.save(personAccountOld);
 	}
@@ -207,5 +215,5 @@ public class PersonAccountManager implements PersonAccountService {
 		this.personAccountBusinessRules.checkIfPersonAccountIdExists(id);
 		this.personAccountRepository.deleteById(id);
 	}
-
+  
 }

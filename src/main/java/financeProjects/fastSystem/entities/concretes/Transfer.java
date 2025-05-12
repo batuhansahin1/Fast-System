@@ -45,12 +45,22 @@ public class Transfer {
     @Embedded
     TransferPojo transferPojo;
      
+
+      
+      @ManyToOne
+      @JoinColumn(referencedColumnName="account_number")
+      PersonAccount receiverPersonAccount;
+
+      @ManyToOne
+      @JoinColumn(referencedColumnName = "account_number")
+      PersonAccount senderPersonAccount;
+
+
+    // @ManyToOne
+    // @JoinColumn(name = "gonderici_iban_id",referencedColumnName = "id")
+    // private Iban gonderici;
     
-    @ManyToOne
-    @JoinColumn(name = "gonderici_iban_id",referencedColumnName = "id")
-    private Iban gonderici;
-    
-    @ManyToOne
-    @JoinColumn(name = "alici_iban_id",referencedColumnName = "id")
-    private Iban alici;
+    // @ManyToOne
+    // @JoinColumn(name = "alici_iban_id",referencedColumnName = "id")
+    // private Iban alici;
 }

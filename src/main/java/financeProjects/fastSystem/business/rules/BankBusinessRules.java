@@ -25,8 +25,8 @@ public class BankBusinessRules {
 		}
 	}
 	public void checkIfBankCodeExists(String bankCode) {
-		if(bankRepository.existsByBankPojo_BankCode(bankCode)) {
-			throw new BusinessException("There is already a bank with that "+bankCode);
+		if(!bankRepository.existsByBankPojo_BankCode(bankCode)) {
+			throw new BusinessException("There is no bank in our records with that bankCode ");
 			
 		}
 	}

@@ -1,5 +1,7 @@
 package financeProjects.fastSystem.business.responses;
 
+import java.time.LocalDate;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -9,6 +11,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class AfterCreatingAccountResponse {
     
+    private LocalDate createdDate;
     private String ibanNumber;
     private String errorCode;
     private String errorMessage;

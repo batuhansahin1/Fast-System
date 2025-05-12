@@ -1,5 +1,6 @@
 package financeProjects.fastSystem.core.utilities.POJO;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 
@@ -14,9 +15,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class PersonAccountPojo {
 
-	private String accountNo;
+	private String accountNumber;
 	
-	private LocalDateTime createdDate;
+	private LocalDate createdDate;
 	
     private String accountCurrency;
 
