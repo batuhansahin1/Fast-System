@@ -29,7 +29,11 @@ public class PersonAccount {
 	
 	@Embedded
     private PersonAccountPojo personAccountPojo;
-	
+	 
+    @Column(name = "account_number",unique = true)
+	private String accountNumber;
+
+
 	@ManyToOne
 	@JoinColumn(name = "bank_id")
 	private Bank bank;
@@ -40,9 +44,14 @@ public class PersonAccount {
 	
 	
 	//buraya transferList'i eklemek lazım
-	@OneToMany(mappedBy = "personAccount")
-	List<Transfer> transfers;
-	
+	//bir hesabın birden fazla transferList'i olabilir yani birden fazla transfer gelebilir bir hesap
+	//birden fazla transfer yapabilir ya da alabilir
+
+	// in memory tutuyor 
+	@OneToMany(mappedBy = "receiverPersonAccount")
+	List<Transfer> receivedTransfers;  
+	@OneToMany(mappedBy = "senderPersonAccount")
+	List<Transfer> sendedTransfers;
 
 	//bir hesabın birden fazla ibanı olabilir mantığıyla yapmıştık ama böyle bir şey yok 1 hesabın 1 tane ibanı var
 	//çünkü kullanıcının açtığı her bir hesap için hesapNumarası oluşturuluyor ve ibanı da bu parametrelerle oluşturuyoruz

@@ -43,11 +43,11 @@ public class Iban {
 	  PersonAccount personAccount;
 	 
     //bu tablo iptal
-    @OneToMany(mappedBy = "gonderici")
-    List<Transfer> sendedTransfers;
+    // @OneToMany(mappedBy = "gonderici")
+    // List<Transfer> sendedTransfers;
     
-    @OneToMany(mappedBy = "alici")
-    List<Transfer> receivedTransfers;
+    // @OneToMany(mappedBy = "alici")
+    // List<Transfer> receivedTransfers;
     
     
 }

@@ -35,4 +35,10 @@ public class PersonAccountBusinessRules {
 				throw new BusinessException("there is no customer id please enter valid id");
 			}
 	}
+     public void checkIfIbanExists(String ibanNumber) {
+        // TODO Auto-generated method stub
+
+         if(!this.personAccountRepository.existsByPersonAccountPojoIbanNumber(ibanNumber))
+        throw new BusinessException("there is no record with that iban pls try valid one");
+     }
 }

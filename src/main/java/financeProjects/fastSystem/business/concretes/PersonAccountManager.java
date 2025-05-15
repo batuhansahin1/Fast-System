@@ -59,9 +59,12 @@ public class PersonAccountManager implements PersonAccountService {
 					//this.modelMapperService.forResponse().map(account, GetAllPersonAccountsResponse.class)
 					GetAllPersonAccountsResponse getAllPersonAccountResponse=new GetAllPersonAccountsResponse();
 					//getname'si null olan bir veri satırı vardı silinince düzeldi pointer oluşturuluyor
-					System.out.println(account.getBank().getBankPojo().getName());
+					
+					getAllPersonAccountResponse.setSendedTransfers(account.getSendedTransfers());
+					getAllPersonAccountResponse.setReceivedTransfers(account.getReceivedTransfers());
+					getAllPersonAccountResponse.setIbanNumber(account.getPersonAccountPojo().getIbanNumber());
 					getAllPersonAccountResponse.setBankName(account.getBank().getBankPojo().getName());
-					getAllPersonAccountResponse.setAccountNo(account.getPersonAccountPojo().getAccountNumber());
+					getAllPersonAccountResponse.setAccountNo(account.getAccountNumber());
 					getAllPersonAccountResponse.setPersonFirstName(account.getPerson().getPersonPojo().getFirstName());
 					getAllPersonAccountResponse.setPersonTcKimlikNo(account.getPerson().getPersonPojo().getTcKimlikNo());
 					getAllPersonAccountResponse.setAccountCurrency(account.getPersonAccountPojo().getAccountCurrency());
@@ -80,7 +83,7 @@ public class PersonAccountManager implements PersonAccountService {
 		GetPersonAccountByIdResponse getPersonAccountResponse=this.modelMapperService.forResponse().map(personAccount, GetPersonAccountByIdResponse.class);
 		//pojolar olduğu için mapperlar set etmez çünkü adını bulamazlar
 		getPersonAccountResponse.setBankName(personAccount.getBank().getBankPojo().getName());
-		getPersonAccountResponse.setAccountNo(personAccount.getPersonAccountPojo().getAccountNumber());
+		getPersonAccountResponse.setAccountNo(personAccount.getAccountNumber());
 		getPersonAccountResponse.setPersonFirstName(personAccount.getPerson().getPersonPojo().getFirstName());
 		getPersonAccountResponse.setPersonTcKimlikNo(personAccount.getPerson().getPersonPojo().getTcKimlikNo());
 		return getPersonAccountResponse;
@@ -180,7 +183,7 @@ public class PersonAccountManager implements PersonAccountService {
 	    personAccount.setPersonAccountPojo(personAccountPojo);
 		personAccount.getPersonAccountPojo().setCreatedDate(createdDate);
 		personAccount.getPersonAccountPojo().setAccountCurrency(createPersonAccountRequest.getAccountCurrency());
-		personAccount.getPersonAccountPojo().setAccountNumber(createPersonAccountRequest.getAccountNo());
+		personAccount.setAccountNumber(createPersonAccountRequest.getAccountNo());
 
 		personAccount.getPersonAccountPojo().
 		setIbanNumber(helperFunctions.generateIban("TR",createPersonAccountRequest.getBankCode()
@@ -205,7 +208,7 @@ public class PersonAccountManager implements PersonAccountService {
 		 * personAccount.setBank(personAccountOld.getBank()); 
 		 * personAccount.setPerson(personAccountOld.getPerson());
 		 */
-		personAccountOld.getPersonAccountPojo().setAccountNumber(updatePersonAccountRequest.getAccountNo());
+		personAccountOld.setAccountNumber(updatePersonAccountRequest.getAccountNo());
 		//personAccount.setIbanList(personAccountOld.getIbanList());
 		this.personAccountRepository.save(personAccountOld);
 	}

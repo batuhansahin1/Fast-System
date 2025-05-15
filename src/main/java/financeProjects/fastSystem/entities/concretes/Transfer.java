@@ -25,6 +25,14 @@ public class Transfer {
     @Column(name="id")
 	private int id;
     
+  @Embedded
+  TransferPojo transferPojo;
+  @ManyToOne
+  @JoinColumn(referencedColumnName="account_number")
+  PersonAccount receiverPersonAccount;
+  @ManyToOne
+  @JoinColumn(referencedColumnName = "account_number")
+  PersonAccount senderPersonAccount;
     
 	/*
 	 * @Column(name="transfer_status") private String transferStatus;
@@ -42,18 +50,15 @@ public class Transfer {
 	 * 
 	 * @Column(name="transfer_amount") private int transferAmount;
 	 */
-    @Embedded
-    TransferPojo transferPojo;
-     
-
+  
+    
       
-      @ManyToOne
-      @JoinColumn(referencedColumnName="account_number")
-      PersonAccount receiverPersonAccount;
 
-      @ManyToOne
-      @JoinColumn(referencedColumnName = "account_number")
-      PersonAccount senderPersonAccount;
+      //buna gerek yok gibi çünkü  iki heap'ın da bizim bankada olacağı kesin değil
+      //bu yüzden transfer gerçekleştirilen ya da gerçekleşen account olarak 1 tane tutabiliriz 
+      //1 tane tutarsak da 2 hesap bizim bankamızda olabilir iki ibana da eklememiz lazım
+      //ama şöyle bir şey var bunu merkez bankasına bildireceğimiz için alan kişi için merkez bankası bize request
+      //hepsi banka için geçerli
 
 
     // @ManyToOne

@@ -12,13 +12,14 @@ import financeProjects.fastSystem.business.requests.UpdateTransferRequest;
 import financeProjects.fastSystem.business.responses.GetAllTransfersResponse;
 import financeProjects.fastSystem.business.responses.GetTransferByIdResponse;
 import financeProjects.fastSystem.business.rules.IbanBusinessRules;
+import financeProjects.fastSystem.business.rules.PersonAccountBusinessRules;
 import financeProjects.fastSystem.business.rules.TransferBusinessRules;
 import financeProjects.fastSystem.core.utilities.POJO.TransferPojo;
 import financeProjects.fastSystem.core.utilities.mappers.ModelMapperService;
 import financeProjects.fastSystem.dataAcces.abstracts.IbanRepository;
 import financeProjects.fastSystem.dataAcces.abstracts.PersonAccountRepository;
 import financeProjects.fastSystem.dataAcces.abstracts.TransferRepository;
-import financeProjects.fastSystem.entities.concretes.Iban;
+
 import financeProjects.fastSystem.entities.concretes.PersonAccount;
 import financeProjects.fastSystem.entities.concretes.Transfer;
 import lombok.AllArgsConstructor;
@@ -36,6 +37,7 @@ public class TransferManager implements TransferService  {
     private final IbanRepository ibanRepository;
     private final IbanBusinessRules ibanBusinessRules;
 	private final PersonAccountRepository personAccountRepository;
+	private final PersonAccountBusinessRules personAccountBusinessRules;
 	
 	@Override
 	public List<GetAllTransfersResponse> getAll() {
@@ -44,6 +46,7 @@ public class TransferManager implements TransferService  {
 				.map(transfer->{
 					//this.modelMapperService.forResponse().map(transfer, GetAllTransfersResponse.class)
 				    GetAllTransfersResponse transferResponse=new GetAllTransfersResponse();
+				
 					transferResponse.setAliciIbanNumber(transfer.getTransferPojo().getReceiverIban());
 					transferResponse.setGondericiIbanNumber(transfer.getTransferPojo().getSenderIban());
 					transferResponse.setAmount(transfer.getTransferPojo().getTransferAmount());
@@ -82,8 +85,14 @@ public class TransferManager implements TransferService  {
 		//this.ibanBusinessRules.checkIfIbanIdExists(createTransferRequest.getGonderici_id());
         //transfer içinde yazılacak
 		//ikisini de checkIf iban exists ile kontrol edebiliriz
-		this.transferBusinessRules.checkIfIbanExists(createTransferRequest.getSenderIban());
-        this.transferBusinessRules.checkIfIbanExists(createTransferRequest.getReceiverIban());
+	
+
+		//sistemde böyle bir iban var mı diye kayıt açıcaz bu businessRules gereksiz
+
+		// this.transferBusinessRules.checkIfIbanExists(createTransferRequest.getSenderIban());
+        // this.transferBusinessRules.checkIfIbanExists(createTransferRequest.getReceiverIban());
+		this.personAccountBusinessRules.checkIfIbanExists(createTransferRequest.getSenderIban());
+		this.personAccountBusinessRules.checkIfIbanExists(createTransferRequest.getReceiverIban());
 
 
 		//postgre ilgili bir hata var localDate ile ilgili
@@ -108,6 +117,17 @@ public class TransferManager implements TransferService  {
 		  .findByPersonAccountPojoIbanNumber(createTransferRequest.getReceiverFirstName());
 		  PersonAccount	senderPersonAccount=personAccountRepository
 		  .findByPersonAccountPojoIbanNumber(createTransferRequest.getSenderIban())	;
+		  //veritabanında hangisi varsa onu ekleyeceğiz  ikisi de varsa sender'ı ekleyeceğiz
+		  //receiver için merkez bankası bize request atıcak onu da ayırt etmek için burada şart yapmamız lazım
+		  //aslında mantık şu olmalı sender ya da receiverdan biri nul dönerse diğerini set etmemiz lazım
+		  //ikisi de dönerse ikisini de set etmemiz lazım ama şöyle bir şey var receiver için merkez bankası bize request
+		  //attığında set edicez benim her zaman hangisi benim veritabanımdaysa onu setlemem lazım amaşöyle de bir şey var 
+		  //transferrequest'i front-enden aldıysam sender benim ama merkez bankası bana request atarsa receiver benim
+		  //bankaların yaptığı şöyle bir şey var aslında kendi banka içinden ise alıcıdirekt adını otomatik dolduruyorlar
+		  //buradan olayı farklılaştırabiliriz o zaman bu fonksiyonun içinden mi api request yapıcam kendi bankama
+		  //hem sender hem de receiver benim bankamdansa hepsi banka bakış açısı için fast sistemi için bir hata yok
+		  transfer.getTransferPojo().setTransferAmount(createTransferRequest.getTransferPojoTransferAmount());
+		  transfer.getTransferPojo().setTransferDescription(createTransferRequest.getTransferPojoTransferDescription());
 		  transfer.setReceiverPersonAccount(receiverPersonAccount);
 		  transfer.setSenderPersonAccount(senderPersonAccount);
 		  transfer.getTransferPojo().setSenderIban(createTransferRequest.getSenderIban());
@@ -117,6 +137,8 @@ public class TransferManager implements TransferService  {
 				System.out.println(transfer.getTransferPojo());
 				transfer.getTransferPojo().setTransferDate(transferDateTime);
 		this.transferRepository.save(transfer);
+
+		//receiver bankaya api request lazım
 	}
 
 	@Override
