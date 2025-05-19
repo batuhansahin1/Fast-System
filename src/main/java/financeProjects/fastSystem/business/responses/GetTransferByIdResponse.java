@@ -12,6 +12,6 @@ public class GetTransferByIdResponse {
 	
 	private String gondericiIbanNumber;
 	private String aliciIbanNumber;
-	private int miktar;
+	private String miktar;
 	private String description;
 }

@@ -36,4 +36,10 @@ public class BankBusinessRules {
 			
 		}
 	}
+		public void checkIfVKimlikNoExists(String vkn) {
+		if(!bankRepository.existsByBankPojo_VKimlikNumber(vkn)) {
+			throw new BusinessException("There is no record with that vkn pls enter different one");
+			
+		}
+	}
 }

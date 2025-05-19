@@ -19,6 +19,4 @@ public class GetAllPersonAccountsResponse {
 	private String personTcKimlikNo;
 	private String accountCurrency;
 	private String ibanNumber;
-	private List<Transfer> receivedTransfers;
-	private List<Transfer> sendedTransfers;
 }

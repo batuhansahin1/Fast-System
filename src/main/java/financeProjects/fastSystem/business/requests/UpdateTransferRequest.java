@@ -9,8 +9,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class UpdateTransferRequest {
 
-	
+	 
 	private int id;
 	private String transferStatus;
-	private int transferAmount;
+	private String transferAmount;
 }

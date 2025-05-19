@@ -21,10 +21,10 @@ import financeProjects.fastSystem.business.rules.BankBusinessRules;
 import financeProjects.fastSystem.business.rules.PersonAccountBusinessRules;
 import financeProjects.fastSystem.business.rules.PersonBusinessRules;
 import financeProjects.fastSystem.core.utilities.Helpers.HelperFunctions;
-import financeProjects.fastSystem.core.utilities.POJO.BankPojo;
+
 import financeProjects.fastSystem.core.utilities.POJO.PersonAccountPojo;
 import financeProjects.fastSystem.core.utilities.POJO.PersonPojo;
-import financeProjects.fastSystem.core.utilities.generators.Generators;
+
 
 import financeProjects.fastSystem.core.utilities.mappers.ModelMapperService;
 import financeProjects.fastSystem.dataAcces.abstracts.BankRepository;
@@ -60,8 +60,6 @@ public class PersonAccountManager implements PersonAccountService {
 					GetAllPersonAccountsResponse getAllPersonAccountResponse=new GetAllPersonAccountsResponse();
 					//getname'si null olan bir veri satırı vardı silinince düzeldi pointer oluşturuluyor
 					
-					getAllPersonAccountResponse.setSendedTransfers(account.getSendedTransfers());
-					getAllPersonAccountResponse.setReceivedTransfers(account.getReceivedTransfers());
 					getAllPersonAccountResponse.setIbanNumber(account.getPersonAccountPojo().getIbanNumber());
 					getAllPersonAccountResponse.setBankName(account.getBank().getBankPojo().getName());
 					getAllPersonAccountResponse.setAccountNo(account.getAccountNumber());

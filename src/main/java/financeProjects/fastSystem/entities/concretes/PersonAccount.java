@@ -6,6 +6,7 @@ import financeProjects.fastSystem.core.utilities.POJO.PersonAccountPojo;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
@@ -48,9 +49,11 @@ public class PersonAccount {
 	//birden fazla transfer yapabilir ya da alabilir
 
 	// in memory tutuyor 
-	@OneToMany(mappedBy = "receiverPersonAccount")
+	//transfer ile ilgili iç içe çağırmalar yapıp duruyor transfer içinden account'u account içinden
+	//transferi şimdilik response nesnesinde göstermeyeceğim
+	@OneToMany(mappedBy = "receiverPersonAccount",fetch = FetchType.LAZY)
 	List<Transfer> receivedTransfers;  
-	@OneToMany(mappedBy = "senderPersonAccount")
+	@OneToMany(mappedBy = "senderPersonAccount",fetch = FetchType.LAZY)
 	List<Transfer> sendedTransfers;
 
 	//bir hesabın birden fazla ibanı olabilir mantığıyla yapmıştık ama böyle bir şey yok 1 hesabın 1 tane ibanı var

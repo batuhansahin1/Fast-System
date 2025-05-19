@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import financeProjects.fastSystem.business.abstracts.TransferService;
 import financeProjects.fastSystem.business.requests.CreateTransferRequest;
 import financeProjects.fastSystem.business.requests.UpdateTransferRequest;
+import financeProjects.fastSystem.business.responses.AfterCreatingTransferResponse;
 import financeProjects.fastSystem.business.responses.GetAllTransfersResponse;
 import financeProjects.fastSystem.business.responses.GetTransferByIdResponse;
 import lombok.AllArgsConstructor;
@@ -32,10 +33,10 @@ public class TransfersController {
 	@GetMapping("/{id}")
 	GetTransferByIdResponse getById(int id) {
 		return this.transferService.getById(id);
-	}
-	@PostMapping
-	void add(CreateTransferRequest createTransferRequest) {
-		this.transferService.add(createTransferRequest);
+	} 
+	@PostMapping("/add")
+	AfterCreatingTransferResponse add(CreateTransferRequest createTransferRequest) {
+		return this.transferService.add(createTransferRequest);
 	}
 	@PutMapping
 	void update(UpdateTransferRequest updateTransferRequest) {

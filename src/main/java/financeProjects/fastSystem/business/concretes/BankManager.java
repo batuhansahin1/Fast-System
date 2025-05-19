@@ -49,7 +49,7 @@ public class BankManager implements BankService {
 		
 		this.bankBusinessRules.checIfBankNameExists(createBankRequest.getBankPojoName());
 		this.bankBusinessRules.checkIfVKimlikNumberExists(createBankRequest.getBankPojoVKimlikNumber());
-		this.bankBusinessRules.checkIfBankCodeExists(createBankRequest.getBankPojoBankCode());
+		//this.bankBusinessRules.checkIfBankCodeExists(createBankRequest.getBankPojoBankCode());
 		//vkn ve bankCode'yi requestte kontrol ediyoruz
 		
 		Bank bank=this.modelMapperService.forRequest().map(createBankRequest, Bank.class);

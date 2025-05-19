@@ -12,6 +12,6 @@ public class GetAllTransfersResponse {
 
 	private String gondericiIbanNumber;
 	private String aliciIbanNumber;
-	private int amount;
+	private String amount;
 	private String description;
 }

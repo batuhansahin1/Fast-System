@@ -16,7 +16,7 @@ public class TransferPojo {
 
 	private Long transferNumber;
 	private String transferDescription;
-	private int transferAmount;
+	private String transferAmount;
 	private Date transferDate;
     private String senderIban;
     private String receiverIban;

@@ -24,11 +24,12 @@ public class HelperFunctions {
         return  responseObject;
     }
 
-    public Map<String,Object> addRequest(String url,Map<String,Object> requestObject) throws JsonProcessingException{
-      ObjectMapper mapper=new ObjectMapper();
-      String json=mapper.writeValueAsString(requestObject);
+    public Map<String,Object> addRequest(String url) throws JsonProcessingException{
+      //dObjectMapper mapper=new ObjectMapper();
+      //String json=mapper.writeValueAsString(requestObject);
 
-      Map<String,Object> responseObject=webClient.post().uri(url).bodyValue(json).retrieve()
+      //body value yaptırmıyor urlde gönderiyoruz verileri
+      Map<String,Object> responseObject=webClient.post().uri(url).retrieve()
       .bodyToMono(new ParameterizedTypeReference<Map<String,Object>>() {}).block();
 
      return responseObject;
