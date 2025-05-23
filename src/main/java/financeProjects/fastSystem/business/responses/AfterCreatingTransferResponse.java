@@ -16,5 +16,8 @@ public class AfterCreatingTransferResponse {
     private String status;
 
     private String receiverBankName;
+
+    private String errorCode;
+    private String errorMessage;
     
 }

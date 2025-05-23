@@ -27,10 +27,12 @@ public class CreateTransferRequest {
 
 	@NotBlank
 	@NotNull
+	@Size(min = 26,max = 26)
 	private String senderIban;
 	
 	@NotBlank
 	@NotNull
+	@Size(min = 26,max = 26)
 	private String receiverIban;
 	@NotBlank
 	@NotNull

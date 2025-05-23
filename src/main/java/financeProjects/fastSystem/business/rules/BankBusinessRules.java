@@ -32,7 +32,7 @@ public class BankBusinessRules {
 	}
 	public void checkIfVKimlikNumberExists(String vkn) {
 		if(bankRepository.existsByBankPojo_VKimlikNumber(vkn)) {
-			throw new BusinessException("There is a record with that vkn pls enter different one");
+			throw new BusinessException("There is a record with that vkn pls enter different one for creating bank");
 			
 		}
 	}

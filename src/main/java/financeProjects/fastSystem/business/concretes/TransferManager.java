@@ -108,7 +108,7 @@ public class TransferManager implements TransferService  {
 		this.personAccountBusinessRules.checkIfIbanExists(createTransferRequest.getSenderIban());
 		this.personAccountBusinessRules.checkIfIbanExists(createTransferRequest.getReceiverIban());
             //list bütün ilişkilitablolardaki list verilerini getiriyor 16.05.2025 çözüleccek 
-
+        this.bankBusinessRules.checkIfVKimlikNoExists(createTransferRequest.getSenderBankVkn());
 		//postgre ilgili bir hata var localDate ile ilgili
 		Date transferDateTime= new Date();
 		//buradakini de iban tablosundan çekmemiz lazım çünkü bulamayacak ve null döndürecek bu yüzden ibanRepositoryden çağırmamız lazım
@@ -130,6 +130,25 @@ public class TransferManager implements TransferService  {
                 transfer.setTransferPojo(transferPojo);
           PersonAccount receiverPersonAccount=personAccountRepository
 		  .findByPersonAccountPojoIbanNumber(createTransferRequest.getReceiverIban());
+
+		  System.out.println(Boolean.toString(receiverPersonAccount.getPerson()
+		  .getPersonPojo().getFirstName().equals(createTransferRequest.getReceiverFirstName()))+
+		  Boolean.toString(
+			  receiverPersonAccount.getPerson().getPersonPojo().getLastName().equals(createTransferRequest.getReceiverLastName())
+			  )
+		  
+		  );
+		  if(!receiverPersonAccount.getPerson().getPersonPojo().getFirstName().equals(createTransferRequest.getReceiverFirstName())
+		  || !receiverPersonAccount.getPerson().getPersonPojo().getLastName().equals(createTransferRequest.getReceiverLastName())){
+			  //response da döndürebiliriz
+			  AfterCreatingTransferResponse afterCreatingTransferResponse=new AfterCreatingTransferResponse();
+			  afterCreatingTransferResponse.setStatus("not sended");
+			  afterCreatingTransferResponse.setErrorCode("400");
+			  afterCreatingTransferResponse.setErrorMessage("Information of receiver person is not valid");
+			 // return afterCreatingTransferResponse;
+			 throw new Exception("Gönderilen veriler alıcı bilgisiyle uyuşmamaktadır");
+
+		  }
 		  PersonAccount	senderPersonAccount=personAccountRepository
 		  .findByPersonAccountPojoIbanNumber(createTransferRequest.getSenderIban())	;
 		  //veritabanında hangisi varsa onu ekleyeceğiz  ikisi de varsa sender'ı ekleyeceğiz
@@ -161,8 +180,12 @@ public class TransferManager implements TransferService  {
 		//göndericiye öyle response döndürüyoruz halbuki burada karar mercii mb alıcı banka değil beni alıcı bankadan gelen response ilgilendirmiyor
 		//gönderici ve alıcı banka aynıysa program bir api request'in kodunu tamamladan diğerine geçiyor o yüzden ben  response nesnesini alıcı bankadan gelen cevaba göre set etmemeliyim
 		// alıcı bankaya request kodunu yazmadan önce kod çalışıyordu
+		//hatanın sebebi transfer_ref  unique olarak gönderilmemesi bunun için hata yazmıştım  banka bu 
+		// unique olmazsa bu kodu kabul etmiyor  (unique olunca ekledi) ondan önceki hata stringleri != ile karşılaştırıp
+		//doğru sonuç çıkmasını bekledim yanlış sonuç verdi .equals() daha doğru sonuç veriyor
+		String transferReferance=helperFunctions.generateTransferReferance();
 		String uri=UriComponentsBuilder.fromHttpUrl("http://localhost:8080/api/centralbank/transaction/add")
-	    		.queryParam("transactionReferance", "1234567893")
+	    		.queryParam("transactionReferance", transferReferance)
 				.queryParam("senderFirstName", senderPersonAccount.getPerson().getPersonPojo().getFirstName())
 				.queryParam("senderLastName",senderPersonAccount.getPerson().getPersonPojo().getLastName())
 				.queryParam("senderIban",senderPersonAccount.getPersonAccountPojo().getIbanNumber())
@@ -178,15 +201,17 @@ public class TransferManager implements TransferService  {
 				System.out.println(uri); 
 
                //alıcı bankaya api request
-			  
 				Map<String,Object> receiverResponse=helperFunctions.addRequest(uri);
 				System.out.println(receiverResponse);
 				//if(receiverResponse.get("status").toString()=="ok"){
 				AfterCreatingTransferResponse afterCreatingTransferResponse=new AfterCreatingTransferResponse();
 			     afterCreatingTransferResponse.setReceiverBankName(receiverPersonAccount.getBank().getBankPojo().getName());
-				 afterCreatingTransferResponse.setTransferReferance("1234567890");
+				 afterCreatingTransferResponse.setTransferReferance(transferReferance);
 				 afterCreatingTransferResponse.setCurrency(senderPersonAccount.getPersonAccountPojo().getAccountCurrency());
-				 afterCreatingTransferResponse.setStatus("ok");
+				 afterCreatingTransferResponse.setStatus("OK");
+				 //bunu sender banka işlerken kontrol etsin
+				 afterCreatingTransferResponse.setErrorCode("200");
+				 afterCreatingTransferResponse.setErrorMessage("OK");
 				return afterCreatingTransferResponse;
 				//}
 				//else{

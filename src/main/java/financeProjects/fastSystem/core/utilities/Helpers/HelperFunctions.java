@@ -49,4 +49,13 @@ public class HelperFunctions {
 		
 		return "";
 	}
+  public String generateTransferReferance(){
+    
+    String transferReferance="";
+    for(int i=0;i<10;i++){
+      transferReferance+=(int)Math.round(Math.random()*9);
+    }
+    
+    return transferReferance;
+  }
 }
